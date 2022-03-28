@@ -1,0 +1,252 @@
+ package schedulers;
+ 
+import java.util.ArrayList;
+import java.util.Scanner;
+class process
+{
+	
+   String name;
+   int burst;
+   int arrival;
+   boolean done;
+   int wait;
+   
+ 
+
+}
+
+public class RR {
+
+	
+	 String[] names ;
+     int[] arrivalTime;
+     int[] burstTime ;
+	  public int numberOfProcess;
+	  public int 	ContextSwitching;
+	  public int Quantam ;
+	  public RR() {
+	    	
+	    }
+	    
+	    public void get_data() {
+	    	Scanner input = new Scanner(System.in);
+	        System.out.println("Enter the number of processes:");
+	        numberOfProcess = input.nextInt();
+	        names = new String[numberOfProcess];
+	        arrivalTime = new int[numberOfProcess];
+	        burstTime = new int[numberOfProcess];
+	        
+	        System.out.println("Enter the process name || Burst time || arrival time"); 
+	        for(int i=0; i<numberOfProcess; i++) 
+	        { 
+	           
+	        	names[i]=input.next(); //name of process
+	            
+	        	burstTime[i]=input.nextInt();  // Burst time of process
+	           
+	        	arrivalTime[i]=input.nextInt();   //arrival time of process
+	        }
+	        System.out.println("Enter the Quantam please  ");
+	        Quantam = input.nextInt();
+	        System.out.println("Enter the Context switching");
+	        ContextSwitching = input.nextInt();
+	        
+	    	
+	    }
+
+	    public  void runRR() {
+            
+	    	get_data();
+	        //int numberOfProcess = names.length;
+	        int lastTime = 0; // last time in Gantt chart
+	        int TotalWaitingTime = 0;
+	        int TotalTurnAroundTime = 0;
+	        ArrayList<String> Process_Order = new ArrayList<String>();
+	        ArrayList<Integer> Process_Time = new ArrayList<Integer>();
+	        Process_Time.add(0);
+	        int copyArival[] = new int[numberOfProcess];
+	        int copyBurst[] = new int[numberOfProcess];
+	        int Wait[] = new int[numberOfProcess]; // wait time for each process
+	        int TurnAroundTime[] = new int[numberOfProcess]; // turn around time for each process
+
+	        for (int i = 0; i < numberOfProcess; i++) {
+	        	copyArival[i] = arrivalTime[i];
+	        	copyBurst[i] = burstTime[i];
+
+	        }
+
+	        while (true) {
+	            boolean finish = true;
+	            for (int i = 0; i < names.length; i++) {
+	                /**
+	                 * lastTime is the end of chant chart 
+	                 *
+	                 **/
+	                if (copyArival[i] <= lastTime) {
+
+	                    if (copyArival[i] <= Quantam) {
+
+	                        if (copyBurst[i] > 0) {
+
+	                        	finish = false;
+
+	                            if (copyBurst[i] > Quantam) {
+	                            	copyBurst[i] = copyBurst[i] - Quantam;
+	                                copyArival[i] = copyArival[i] + Quantam;
+	                                lastTime = lastTime + Quantam;
+	                                Process_Time.add(lastTime);
+	                                lastTime += ContextSwitching;
+	                                Process_Time.add(lastTime);
+	                                Process_Order.add(names[i]);
+	                                Process_Order.add("");
+
+	                            } else {
+	                            	
+	                                lastTime = lastTime + copyBurst[i];
+	                                copyBurst[i] = 0;
+	                                Process_Time.add(lastTime);
+	                                Wait[i] = lastTime - burstTime[i] - arrivalTime[i];
+	                                TurnAroundTime[i] = burstTime[i] + Wait[i];
+	                                lastTime += ContextSwitching;
+	                                Process_Time.add(lastTime);
+	                                
+	                                Process_Order.add(names[i]);
+	                                Process_Order.add(""); // for Context Switching
+	                            }
+	                        }
+	                    } else if (copyArival[i] > Quantam) {
+
+	                        for (int j = 0; j < names.length; j++) {
+
+	                            if (copyArival[j] < copyArival[i]) {
+
+	                                if (copyBurst[j] > 0) {
+
+	                                	finish = false;
+
+	                                    if (copyBurst[j] > Quantam) {
+
+	                                    	copyBurst[j] = copyBurst[j] - Quantam;
+	                                        copyArival[j] = copyArival[j] + Quantam;
+	                                        lastTime = lastTime + Quantam;
+	                                        Process_Time.add(lastTime);
+	                                        lastTime += ContextSwitching;
+	                                        Process_Time.add(lastTime);
+	                                        Process_Order.add(names[j]);
+	                                        Process_Order.add("");
+
+	                                    } else {
+
+	                                    	 
+	                                         lastTime = lastTime + copyBurst[j];
+	                                         copyBurst[j] = 0;
+	                                        //Wait[j] = lastTime - B_Time[j] - A_Time[j];
+	                                        //TurnAroundTime[i] = B_Time[i] + Wait[i];
+	                                        Process_Time.add(lastTime);
+	                                        Wait[j] = lastTime - burstTime[j] - arrivalTime[j];
+	                                        TurnAroundTime[i] = burstTime[i] + Wait[i];
+	                                        lastTime += ContextSwitching;
+	                                        Process_Time.add(lastTime);
+	                                        //System.out.println("1111111=  "+lastTime+"    "+  TurnAroundTime[i]);
+	                                        
+	                                        Process_Order.add(names[j]);
+	                                        Process_Order.add("");
+
+	                                    }
+	                                }
+	                            }
+	                        }
+
+	                        if (copyBurst[i] > 0) {
+	                        	finish = false;
+
+	                            if (copyBurst[i] > Quantam) {
+	                            	lastTime = lastTime + Quantam;
+	                                Process_Time.add(lastTime);
+	                                copyBurst[i] = copyBurst[i] - Quantam;
+	                                copyArival[i] = copyArival[i] + Quantam;
+	                                lastTime += ContextSwitching;
+	                                Process_Time.add(lastTime);
+	                               
+	                                Process_Order.add(names[i]);
+	                                Process_Order.add("");
+
+	                            } else {
+	                            	lastTime = lastTime + copyBurst[i];
+	                                Process_Time.add(lastTime);
+	                                copyBurst[i] = 0;
+	                                Wait[i] = lastTime - burstTime[i] - arrivalTime[i];
+	                                TurnAroundTime[i] = burstTime[i] + Wait[i];
+	                                Process_Order.add(names[i]);
+	                                lastTime += ContextSwitching;
+	                                Process_Time.add(lastTime);
+	                                //System.out.println("222222222=  "+lastTime+"    "+  TurnAroundTime[i]);
+	                                //nksna ContextSwitching 3lshan mn7sbhosh m3ana
+	                                // Wait[i] = lastTime -ContextSwitching- B_Time[i] - A_Time[i];
+	                               
+	                                Process_Order.add("");
+
+	                            }
+	                        }
+	                    }
+	                } else if (copyArival[i] > lastTime) {
+	                	lastTime++;
+	                    i--;
+	                }
+	            }
+	            if (finish) {
+	                break;
+	            }
+	        }
+
+	        System.out.println("__________________________________________________________________________________________________________________");
+	        System.out.println("");
+
+	        for (int i = 0; i < Process_Order.size(); i++)
+	            System.out.print(" | " + Process_Order.get(i));
+
+	        System.out.println("");
+	        System.out.println("__________________________________________________________________________________________________________________");
+
+	        for (int i = 0; i < Process_Time.size() - 1; i++)
+	            System.out.print(Process_Time.get(i) + "    ");
+	        System.out.println("");System.out.println("");
+	        System.out.println("__________________________________________________________________________________________________________________");
+	        System.out.println("");
+	        System.out.println("process    Turnaround time    Waiting time");
+	        System.out.println("__________________________________________________________________________________________________________________");
+
+	        for (int i = 0; i < numberOfProcess; i++) {
+	            System.out.println(" " + names[i] + "          " + TurnAroundTime[i] + "          " + Wait[i]);
+	            System.out.println("______________________________________________________________________________");
+
+	            TotalWaitingTime += Wait[i];
+	            TotalTurnAroundTime += TurnAroundTime[i];
+	        }
+
+	        System.out.println("Average Waiting time = > " + (float) TotalWaitingTime / numberOfProcess);
+	        System.out.println("Average Turnaround time = > " + (float) TotalTurnAroundTime / numberOfProcess);
+            System.out.println("______________________________________________________________________");
+            System.out.println("");
+	    }
+
+	
+	    	
+	    	
+	    }
+	    	
+	    	
+	 /*
+p1 5 0
+p2 4 1
+p3 6 2
+
+
+	  */
+/*
+p1 4 0
+p2 6 0
+p3 3 0
+
+ */
+
